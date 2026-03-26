@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+enum ExerciseType {
+  closed
+  open
+  hybrid
+}
+
+model Exercise {
+  id                     String       @id @default(cuid())
+  name                   String
+  slug                   String       @unique
+  type                   ExerciseType
+  welcomeContent         String       @default("")
+  completionContent      String       @default("")
+  randomizeCards         Boolean      @default(false)
+  requireAllSorted       Boolean      @default(true)
+  allowDuplicatePlacements Boolean    @default(false)
+  allowCardComments      Boolean      @default(false)
+  isPublished            Boolean      @default(false)
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+
+  cards            Card[]
+  categoryPresets  CategoryPreset[]
+  participantSessions ParticipantSession[]
+}
+
+model Card {
+  id          String   @id @default(cuid())
+  exerciseId  String
+  exercise    Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  label       String
+  description String?
+  sortOrder   Int      @default(0)
+
+  placements Placement[]
+
+  @@index([exerciseId])
+}
+
+model CategoryPreset {
+  id          String   @id @default(cuid())
+  exerciseId  String
+  exercise    Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  label       String
+  description String?
+  sortOrder   Int      @default(0)
+
+  placements Placement[]
+
+  @@index([exerciseId])
+}
+
+model ParticipantSession {
+  id         String    @id @default(cuid())
+  exerciseId String
+  exercise   Exercise  @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  startedAt  DateTime  @default(now())
+  completedAt DateTime?
+
+  participantCategories ParticipantCategory[]
+  placements            Placement[]
+
+  @@index([exerciseId])
+}
+
+model ParticipantCategory {
+  id                   String             @id @default(cuid())
+  participantSessionId String
+  participantSession   ParticipantSession @relation(fields: [participantSessionId], references: [id], onDelete: Cascade)
+  label                String
+  description          String?
+  sortOrder            Int                @default(0)
+
+  placements Placement[]
+
+  @@index([participantSessionId])
+}
+
+model Placement {
+  id                     String   @id @default(cuid())
+  participantSessionId   String
+  participantSession     ParticipantSession @relation(fields: [participantSessionId], references: [id], onDelete: Cascade)
+  cardId                 String
+  card                   Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  categoryPresetId       String?
+  categoryPreset         CategoryPreset? @relation(fields: [categoryPresetId], references: [id], onDelete: Cascade)
+  participantCategoryId  String?
+  participantCategory    ParticipantCategory? @relation(fields: [participantCategoryId], references: [id], onDelete: Cascade)
+  comment                String?
+
+  @@index([participantSessionId])
+  @@index([cardId])
+}
