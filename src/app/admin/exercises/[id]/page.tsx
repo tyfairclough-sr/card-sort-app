@@ -47,6 +47,12 @@ export default async function EditExercisePage({ params }: { params: Promise<{ i
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
+            href={`/admin/exercises/${id}/export.json`}
+            className="rounded-md border border-neutral-300 px-3 py-2 text-sm dark:border-neutral-600"
+          >
+            Export configuration
+          </Link>
+          <Link
             href={`/admin/exercises/${id}/results`}
             className="rounded-md border border-neutral-300 px-3 py-2 text-sm dark:border-neutral-600"
           >

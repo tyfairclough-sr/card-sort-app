@@ -1,6 +1,11 @@
 "use server";
 
 import { auth } from "@/auth";
+import {
+  categoryPresetsToImport,
+  parseCardSortExportFile,
+  type ExportedExercise,
+} from "@/lib/card-sort-export";
 import { prisma } from "@/lib/prisma";
 import { canPublishExercise } from "@/lib/exercise-rules";
 import { isValidSlug } from "@/lib/slug";
@@ -228,4 +233,96 @@ export async function deleteCategoryPreset(presetId: string, exerciseId: string)
   await requireUser();
   await prisma.categoryPreset.delete({ where: { id: presetId } });
   revalidatePath(`/admin/exercises/${exerciseId}`);
+}
+
+export type ImportCardSortState = { error: string } | null;
+
+export async function importCardSortConfiguration(
+  _prev: ImportCardSortState,
+  formData: FormData,
+): Promise<ImportCardSortState> {
+  await requireUser();
+
+  const slugRaw = String(formData.get("slug") ?? "").trim();
+  const nameRaw = String(formData.get("name") ?? "").trim();
+  const file = formData.get("file");
+
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: "Choose a JSON file exported from this app (Export configuration)." };
+  }
+
+  let json: unknown;
+  try {
+    json = JSON.parse(await file.text());
+  } catch {
+    return { error: "Could not parse JSON. Check the file is valid UTF-8 JSON." };
+  }
+
+  const parsed = parseCardSortExportFile(json);
+  if (!parsed.success) {
+    return {
+      error:
+        "This file is not a valid card sort export. Use a file from Export configuration (format card-sort-app, version 1).",
+    };
+  }
+
+  const { exercise: ex } = parsed.data;
+  const name = nameRaw.length > 0 ? nameRaw : ex.name;
+
+  if (!isValidSlug(slugRaw)) {
+    return {
+      error: "URL slug must be 2–120 characters: lowercase letters, numbers, and hyphens only.",
+    };
+  }
+
+  const slugTaken = await prisma.exercise.findUnique({ where: { slug: slugRaw } });
+  if (slugTaken) {
+    return { error: "That URL slug is already in use. Pick a different slug." };
+  }
+
+  const presets = categoryPresetsToImport(ex.type, ex.categoryPresets);
+
+  const created = await prisma.$transaction(async (tx) => {
+    const exercise = await tx.exercise.create({
+      data: {
+        name,
+        slug: slugRaw,
+        type: ex.type,
+        welcomeContent: ex.welcomeContent,
+        completionContent: ex.completionContent,
+        randomizeCards: ex.randomizeCards,
+        requireAllSorted: ex.requireAllSorted,
+        allowDuplicatePlacements: ex.allowDuplicatePlacements,
+        allowCardComments: ex.allowCardComments,
+        isPublished: false,
+      },
+    });
+
+    if (ex.cards.length > 0) {
+      await tx.card.createMany({
+        data: ex.cards.map((c: ExportedExercise["cards"][number], index: number) => ({
+          exerciseId: exercise.id,
+          label: c.label,
+          description: c.description ?? null,
+          sortOrder: c.sortOrder ?? index,
+        })),
+      });
+    }
+
+    if (presets.length > 0) {
+      await tx.categoryPreset.createMany({
+        data: presets.map((p) => ({
+          exerciseId: exercise.id,
+          label: p.label,
+          description: p.description,
+          sortOrder: p.sortOrder,
+        })),
+      });
+    }
+
+    return exercise;
+  });
+
+  revalidatePath("/admin/exercises");
+  redirect(`/admin/exercises/${created.id}`);
 }

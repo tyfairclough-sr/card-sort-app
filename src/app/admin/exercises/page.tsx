@@ -13,12 +13,20 @@ export default async function ExercisesPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold tracking-tight">Card sort exercises</h1>
-        <Link
-          href="/admin/exercises/new"
-          className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
-        >
-          New exercise
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/admin/exercises/import"
+            className="rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-50 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800"
+          >
+            Import from JSON
+          </Link>
+          <Link
+            href="/admin/exercises/new"
+            className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+          >
+            New exercise
+          </Link>
+        </div>
       </div>
       {exercises.length === 0 ? (
         <p className="text-neutral-600 dark:text-neutral-400">No exercises yet. Create one to get started.</p>
