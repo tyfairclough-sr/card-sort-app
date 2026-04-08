@@ -3,8 +3,11 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // Pooled URL for runtime queries (Supabase: POSTGRES_PRISMA_URL; Neon: pooled URL).
+  url       = env("DATABASE_URL")
+  // Direct / non-pooling URL for `prisma migrate deploy` (Supabase: POSTGRES_URL_NON_POOLING).
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -107,4 +110,83 @@ model Placement {
 
   @@index([participantSessionId])
   @@index([cardId])
+}
+
+enum FiatDenomination {
+  ONE_HUNDRED
+  FIFTY
+  TWENTY
+  TEN
+  FIVE
+  ONE
+}
+
+model MonopolyExercise {
+  id                             String   @id @default(cuid())
+  name                           String
+  slug                           String   @unique
+  welcomeContent                 String   @default("")
+  completionContent              String   @default("")
+  randomizeCards                 Boolean  @default(false)
+  requireAllFiatSpent            Boolean  @default(false)
+  allowMultipleDenominationsPerCard Boolean @default(false)
+  allowCardComments              Boolean  @default(false)
+  isPublished                    Boolean  @default(false)
+  createdAt                      DateTime @default(now())
+  updatedAt                      DateTime @updatedAt
+
+  cards               MonopolyCard[]
+  participantSessions MonopolyParticipantSession[]
+}
+
+model MonopolyCard {
+  id          String           @id @default(cuid())
+  exerciseId  String
+  exercise    MonopolyExercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  label       String
+  description String?
+  sortOrder   Int              @default(0)
+
+  allocations MonopolyAllocation[]
+  comments    MonopolyParticipantCardComment[]
+
+  @@index([exerciseId])
+}
+
+model MonopolyParticipantSession {
+  id         String           @id @default(cuid())
+  exerciseId String
+  exercise   MonopolyExercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  startedAt  DateTime         @default(now())
+  completedAt DateTime?
+
+  allocations MonopolyAllocation[]
+  cardComments MonopolyParticipantCardComment[]
+
+  @@index([exerciseId])
+}
+
+model MonopolyAllocation {
+  id                     String                   @id @default(cuid())
+  participantSessionId   String
+  participantSession     MonopolyParticipantSession @relation(fields: [participantSessionId], references: [id], onDelete: Cascade)
+  cardId                 String
+  card                   MonopolyCard             @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  denomination           FiatDenomination
+
+  @@unique([participantSessionId, denomination])
+  @@index([participantSessionId])
+  @@index([cardId])
+}
+
+model MonopolyParticipantCardComment {
+  id                     String                   @id @default(cuid())
+  participantSessionId   String
+  participantSession     MonopolyParticipantSession @relation(fields: [participantSessionId], references: [id], onDelete: Cascade)
+  cardId                 String
+  card                   MonopolyCard             @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  body                   String
+
+  @@unique([participantSessionId, cardId])
+  @@index([participantSessionId])
 }

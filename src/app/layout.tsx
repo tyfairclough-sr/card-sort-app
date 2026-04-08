@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Card sort research",
+  title: "Research tools",
   description: "Card sorting exercises for research sessions",
 };
 
@@ -26,9 +26,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col bg-base-100 text-base-content">
         <Providers>{children}</Providers>
       </body>
     </html>
