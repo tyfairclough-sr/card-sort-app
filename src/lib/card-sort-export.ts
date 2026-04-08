@@ -2,8 +2,16 @@ import { z } from "zod";
 import { showPresetCategories } from "@/lib/exercise-rules";
 import type { Card, CategoryPreset, Exercise, ExerciseType } from "@prisma/client";
 
-export const CARD_SORT_EXPORT_FORMAT = "card-sort-app" as const;
+/** Current export format id (written by Export configuration). */
+export const CARD_SORT_EXPORT_FORMAT = "research-app" as const;
+/** Legacy id from before the app rename; still accepted on import. */
+export const CARD_SORT_EXPORT_FORMAT_LEGACY = "card-sort-app" as const;
 export const CARD_SORT_EXPORT_VERSION = 1 as const;
+
+const cardSortExportFileFormatSchema = z.union([
+  z.literal(CARD_SORT_EXPORT_FORMAT),
+  z.literal(CARD_SORT_EXPORT_FORMAT_LEGACY),
+]);
 
 const exerciseTypeSchema = z.enum(["closed", "open", "hybrid"]);
 
@@ -35,7 +43,7 @@ export const exportedExerciseSchema = z.object({
 export type ExportedExercise = z.infer<typeof exportedExerciseSchema>;
 
 export const cardSortExportFileSchema = z.object({
-  format: z.literal(CARD_SORT_EXPORT_FORMAT),
+  format: cardSortExportFileFormatSchema,
   version: z.literal(CARD_SORT_EXPORT_VERSION),
   exportedAt: z.string().optional(),
   exercise: exportedExerciseSchema,

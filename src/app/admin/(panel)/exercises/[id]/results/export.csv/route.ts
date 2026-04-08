@@ -74,7 +74,7 @@ export async function GET(
     status: 200,
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="card-sort-${exercise.slug}-results.csv"`,
+      "Content-Disposition": `attachment; filename="research-app-${exercise.slug}-results.csv"`,
     },
   });
 }

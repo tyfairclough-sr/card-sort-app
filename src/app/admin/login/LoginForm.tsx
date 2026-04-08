@@ -11,7 +11,7 @@ export function LoginForm() {
   const [pending, setPending] = useState(false);
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
+    <>
       <h1 className="mb-6 text-2xl font-semibold tracking-tight">Admin sign in</h1>
       <form
         className="flex flex-col gap-4"
@@ -66,6 +66,6 @@ export function LoginForm() {
           {pending ? "Signing in…" : "Sign in"}
         </button>
       </form>
-    </div>
+    </>
   );
 }

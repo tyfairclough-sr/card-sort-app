@@ -262,7 +262,7 @@ export async function importCardSortConfiguration(
   if (!parsed.success) {
     return {
       error:
-        "This file is not a valid card sort export. Use a file from Export configuration (format card-sort-app, version 1).",
+        "This file is not a valid card sort export. Use a file from Export configuration (format research-app or card-sort-app, version 1).",
     };
   }
 

@@ -27,7 +27,7 @@ export async function GET(
 
   const doc = buildCardSortExportDocument(exercise);
   const body = JSON.stringify(doc, null, 2);
-  const filename = `card-sort-${exercise.slug}-config.json`;
+  const filename = `research-app-${exercise.slug}-config.json`;
 
   return new NextResponse(body, {
     status: 200,
