@@ -16,35 +16,6 @@ export function ThemeSwitcher() {
   const isDark = effective === "dark";
   const showPlaceholder = !mounted || !ready;
 
-  // #region agent log
-  {
-    const branch = showPlaceholder ? "placeholder" : "label";
-    fetch("http://127.0.0.1:7365/ingest/345c03df-164c-462c-b9fd-aedb0c58d525", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Debug-Session-Id": "fe9f79",
-      },
-      body: JSON.stringify({
-        sessionId: "fe9f79",
-        runId: "post-fix",
-        hypothesisId: "A",
-        location: "ThemeSwitcher.tsx:render",
-        message: "ThemeSwitcher render branch",
-        data: {
-          branch,
-          mounted,
-          ready,
-          theme: theme ?? null,
-          resolvedTheme: resolvedTheme ?? null,
-          isServer: typeof window === "undefined",
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-  }
-  // #endregion
-
   if (showPlaceholder) {
     return (
       <div
