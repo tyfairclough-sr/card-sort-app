@@ -4,9 +4,9 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  // Pooled URL for runtime queries (Supabase: POSTGRES_PRISMA_URL; Neon: pooled URL).
+  // Pooled URL for runtime (Neon: use the "-pooler" / pooled connection string).
   url       = env("DATABASE_URL")
-  // Direct / non-pooling URL for `prisma migrate deploy` (Supabase: POSTGRES_URL_NON_POOLING).
+  // Direct URL for migrations — Neon: non-pooling "direct" connection string (not the pooler host).
   directUrl = env("DIRECT_URL")
 }
 
@@ -16,6 +16,19 @@ model User {
   passwordHash String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  passwordResetTokens PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 enum ExerciseType {

@@ -8,7 +8,13 @@ import { getToken } from "next-auth/jwt";
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  if (pathname.startsWith("/admin/login")) return NextResponse.next();
+  if (
+    pathname.startsWith("/admin/login") ||
+    pathname.startsWith("/admin/forgot-password") ||
+    pathname.startsWith("/admin/recover-password")
+  ) {
+    return NextResponse.next();
+  }
 
   if (pathname.startsWith("/admin")) {
     const secret = process.env.AUTH_SECRET;

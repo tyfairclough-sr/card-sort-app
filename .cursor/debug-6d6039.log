@@ -1,0 +1,1 @@
+{"sessionId":"6d6039","runId":"pre-fix","hypothesisId":"H1","location":"scripts/agent-debug-build-env.mjs","message":"build env snapshot (configured, not values)","data":{"databaseUrlConfigured":true,"directUrlConfigured":true,"vercel":false,"ci":false},"timestamp":1775735622105}
