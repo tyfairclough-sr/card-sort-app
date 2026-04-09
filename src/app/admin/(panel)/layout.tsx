@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { AppLogo } from "@/components/AppLogo";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
-import { auth, signOut } from "@/auth";
+import { UserAccountMenu } from "@/components/UserAccountMenu";
+import { auth } from "@/auth";
 
 export default async function AdminPanelLayout({
   children,
@@ -32,22 +33,11 @@ export default async function AdminPanelLayout({
                 </Link>
               </nav>
             </div>
-            <div className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-400">
+            <div className="flex items-center gap-3">
               <ThemeSwitcher />
-              <span className="truncate max-w-[200px]">{session?.user?.email}</span>
-              <form
-                action={async () => {
-                  "use server";
-                  await signOut({ redirectTo: "/admin/login" });
-                }}
-              >
-                <button
-                  type="submit"
-                  className="rounded-md border border-neutral-300 px-2 py-1 text-xs hover:bg-neutral-100 dark:border-neutral-600 dark:hover:bg-neutral-800"
-                >
-                  Sign out
-                </button>
-              </form>
+              {session?.user?.email ? (
+                <UserAccountMenu email={session.user.email} />
+              ) : null}
             </div>
           </div>
         </header>
